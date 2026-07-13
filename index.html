@@ -18,34 +18,32 @@
         }
 
         window.onload = async function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const activationCode = urlParams.get('code');
-            
-            const mainContainer = document.getElementById('main-container');
-            const downloadSection = document.getElementById('download-section');
-            const statusMsg = document.getElementById('status-msg');
-            const hospitalName = document.getElementById('hospital-name');
-
-            if (!activationCode) {
-                downloadSection.style.display = 'none';
-                statusMsg.style.color = "#ef4444";
-                statusMsg.innerText = "Please scan a valid Clinic QR Code.";
-                return;
-            }
-
-            const clinic = await validateClinic(activationCode);
-                
-            if (clinic && clinic.is_account_active) {
-                hospitalName.innerText = clinic.name;
-                statusMsg.style.display = 'none';
-                window.location.href = "carebook://activate?code=" + activationCode;
-            } else {
-                downloadSection.style.display = 'none';
-                hospitalName.innerText = "Access Denied";
-                statusMsg.style.color = "#ef4444";
-                statusMsg.innerText = "Your Clinic is not activated. Please contact Support.";
-            }
+        const urlParams = new URLSearchParams(window.location.search);
+        const activationCode = urlParams.get('code');
+        
+        const downloadSection = document.getElementById('download-section');
+        const statusMsg = document.getElementById('status-msg');
+        const hospitalName = document.getElementById('hospital-name');
+    
+        if (!activationCode) {
+            statusMsg.style.color = "#ef4444";
+            statusMsg.innerText = "Please scan a valid Clinic QR Code.";
+            return;
         }
+    
+        const clinic = await validateClinic(activationCode);
+            
+        if (clinic && clinic.is_account_active) {
+            hospitalName.innerText = clinic.name;
+            // ✅ Only show the section after verification
+            downloadSection.style.display = 'block'; 
+            window.location.href = "carebook://activate?code=" + activationCode;
+        } else {
+            hospitalName.innerText = "Access Denied";
+            statusMsg.style.color = "#ef4444";
+            statusMsg.innerText = "Your Clinic is not activated. Please contact Support.";
+        }
+    }
     </script>
 </head>
 <body style="font-family: sans-serif; background-color: #f8fafc; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh;">
@@ -63,7 +61,7 @@
 
         <!-- ✅ Only visible if code is valid -->
         <div id="download-section">
-            <p style="color: #64748b; font-size: 1rem; line-height: 1.6; margin-bottom: 30px; padding: 0 10px;">
+            <p display: none; style="color: #64748b; font-size: 1rem; line-height: 1.6; margin-bottom: 30px; padding: 0 10px;">
                 Please download and install our secure mobile app to book and manage your appointments.
             </p>
             
