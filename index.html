@@ -4,91 +4,70 @@
     <title>CareBook Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        // --- CONFIGURATION ---
         const SUPABASE_URL = "https://mckblvdogrsdylzsiehf.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja2JsdmRvZ3JzZHlsenNpZWhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjY0MDgsImV4cCI6MjA5MjAwMjQwOH0.3roSyePons2sqy9NRB5lfvr198Hsht6EDg5L4ESFQKE";
 
-        async function fetchClinicName(code) {
+        async function validateClinic(code) {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/clinics?activation_code=eq.${code.toUpperCase()}&select=name`, {
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": `Bearer ${SUPABASE_KEY}`
-                    }
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/clinics?activation_code=eq.${code.toUpperCase()}&select=name,is_account_active`, {
+                    headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
                 });
                 const data = await response.json();
-                if (data && data.length > 0) {
-                    return data[0].name;
-                }
+                return (data && data.length > 0) ? data[0] : null;
             } catch (error) {
-                console.error("Error fetching name:", error);
+                return null;
             }
-            return null;
         }
 
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const activationCode = urlParams.get('code');
+            const downloadBtn = document.getElementById('download-btn');
+            const statusMsg = document.getElementById('status-msg');
 
-            if (activationCode) {
-                // 1. Show the code as a fallback immediately
-                document.getElementById('hospital-name').innerText = "Loading...";
+            if (!activationCode) {
+                downloadBtn.style.display = 'none';
+                statusMsg.innerText = "Please scan a valid Clinic QR Code.";
+                return;
+            }
 
-                // 2. Fetch the REAL Hospital Name from Supabase
-                const realName = await fetchClinicName(activationCode);
+            const clinic = await validateClinic(activationCode);
                 
-                if (realName) {
-                    document.getElementById('hospital-name').innerText = realName;
-                } else {
-                    document.getElementById('hospital-name').innerText = "CareBook Portal";
-                }
-                
-                // 3. Trigger the App Wake-up
+            if (clinic && clinic.is_account_active) {
+                document.getElementById('hospital-name').innerText = clinic.name;
+                // Success: Button stays visible, redirect to app
                 window.location.href = "carebook://activate?code=" + activationCode;
+            } else {
+                // Failure: Disable button and show error
+                downloadBtn.style.display = 'none';
+                downloadBtn.style.pointerEvents = 'none';
+                document.getElementById('hospital-name').innerText = "Access Denied";
+                statusMsg.style.color = "#ef4444";
+                statusMsg.innerText = "Your Clinic is not activated. Please contact Support.";
             }
         }
     </script>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh;">
+<body style="font-family: sans-serif; background-color: #f8fafc; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh;">
 
-    <div style="text-align: center; padding: 40px; background: #ffffff; border-radius: 20px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.1); border: 1px solid #e2e8f0;">
+    <div style="text-align: center; padding: 40px; background: #ffffff; border-radius: 20px; max-width: 450px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         
-        <!-- Hospital Branding Section -->
         <div style="margin-bottom: 30px;">
             <div style="background: #eff6ff; width: 80px; height: 80px; border-radius: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
                 <span style="font-size: 40px;">🏥</span>
             </div>
-            <p style="color: #6366f1; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Official Portal</p>
-            <h1 id="hospital-name" style="color: #1e3a8a; font-size: 1.8rem; font-weight: 900; margin: 8px 0; line-height: 1.2;">CareBook</h1>
+            <h1 id="hospital-name" style="color: #1e3a8a; font-size: 1.6rem; font-weight: 900; margin: 8px 0;">Loading...</h1>
+            <p id="status-msg" style="color: #64748b; font-size: 0.9rem;"></p>
         </div>
 
-        <p style="color: #64748b; font-size: 1rem; line-height: 1.6; margin-bottom: 30px; padding: 0 10px;">
-            Please download and install our secure mobile app to book and manage your appointments.
-        </p>
-        
-        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 30px;">
-            <p style="color: #1e3a8a; font-weight: 700; font-size: 0.9rem; margin-top: 0; margin-bottom: 10px;">INSTALLATION STEPS:</p>
-            <ul style="color: #475569; font-size: 0.85rem; padding-left: 20px; margin: 0; line-height: 1.8;">
-                <li>Tap the <b>Download App</b> button below.</li>
-                <li>Allow <b>"Unknown Sources"</b> if prompted.</li>
-                <li>Open the file and click <b>Install Anyway</b>.</li>
-            </ul>
-        </div>
-
-        <a href="https://github.com/LukiTechnologies/CareBook-Demo/releases/download/v1.0.0.1/MultiTenancyProdBuild-v1.0.0.1.apk" 
-           style="background: #2563eb; color: white; padding: 16px 40px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; display: block; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+        <a id="download-btn" href="https://github.com/LukiTechnologies/CareBook-Demo/releases/download/v1.0.0.1/MultiTenancyProdBuild-v1.0.0.1.apk" 
+           style="background: #2563eb; color: white; padding: 16px 40px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; display: inline-block;">
            📥 Download App
         </a>
 
-        <div style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-            <p style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">
-                Securely Powered By
-            </p>
-            <p style="font-size: 0.9rem; color: #475569; font-weight: 700; margin: 4px 0;">
-                Luki Technologies &reg; &copy; 2026
-            </p>
-        </div>
+        <p style="margin-top: 30px; font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+            Powered by Luki Technologies
+        </p>
     </div>
-
 </body>
 </html>
