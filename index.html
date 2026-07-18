@@ -20,8 +20,9 @@
         const APK_URL = "https://github.com/LukiTechnologies/CareBook-Demo/releases/download/v1.0.0.5/Demo-v1.0.0.5.apk";
         let activationCode = "";        
         function activateApp() {
-            window.location.href = `carebook://activate?code=${activationCode}`;
-        }
+			if (!activationCode) return;
+			window.location.href = `carebook://activate?code=${encodeURIComponent(activationCode)}`;
+		}
         
         window.onload = async function () {
         
@@ -77,11 +78,13 @@
                 link.target = "_blank";
                 link.rel = "noopener";
                 link.click();  
-                downloadBtn.style.display = "none";        
+                downloadBtn.style.display = "none"; 				
                 activateSection.style.display = "block";
-                statusMsg.innerHTML =
-                    "✔ App download started. After installing, return here and tap Continue.";
+				document.getElementById("steps-box").style.display = "none";
+				document.querySelector("#download-section > p").innerHTML = "Install the downloaded APK, then tap <b>Continue</b> below.";
+                statusMsg.innerHTML ="✅ Download started successfully.<br><br>Install the APK, then tap <b>Continue</b> below.";
             };
+			
             const activateBtn = document.getElementById("activate-btn");
             activateBtn.innerHTML = `🚀 Continue to ${clinic.name}`;
         };
@@ -105,6 +108,7 @@
                 Install CareBook to securely manage your appointments.        
             </p>        
             <div style="
+				id="steps-box"
                 text-align:left;
                 background:#f8fafc;
                 padding:20px;
@@ -148,7 +152,7 @@
                     color:#16a34a;
                     font-weight:700;
                     margin-bottom:20px;">        
-                    ✔ Installation finished?
+                    ✔ Installation complete?
                     Tap below to activate CareBook.
                 </p>        
                 <a
