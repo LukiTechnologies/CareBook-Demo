@@ -20,9 +20,8 @@
         const APK_URL = "https://github.com/LukiTechnologies/CareBook-Demo/releases/download/v1.0.0.5/Demo-v1.0.0.5.apk";
         let activationCode = "";        
         function activateApp() {
-			if (!activationCode) return;
-			window.location.href = `carebook://activate?code=${encodeURIComponent(activationCode)}`;
-		}
+            window.location.href = `carebook://activate?code=${activationCode}`;
+        }
         
         window.onload = async function () {
         
@@ -78,13 +77,11 @@
                 link.target = "_blank";
                 link.rel = "noopener";
                 link.click();  
-                downloadBtn.style.display = "none"; 				
+                downloadBtn.style.display = "none";        
                 activateSection.style.display = "block";
-				document.getElementById("steps-box").style.display = "none";
-				document.querySelector("#download-section > p").innerHTML = "Install the downloaded APK, then tap <b>Continue</b> below.";
-                statusMsg.innerHTML ="✅ Download started successfully.<br><br>Install the APK, then tap <b>Continue</b> below.";
+                statusMsg.innerHTML =
+                    "✔ App download started. After installing, return here and tap Continue.";
             };
-			
             const activateBtn = document.getElementById("activate-btn");
             activateBtn.innerHTML = `🚀 Continue to ${clinic.name}`;
         };
@@ -108,7 +105,6 @@
                 Install CareBook to securely manage your appointments.        
             </p>        
             <div style="
-				id="steps-box"
                 text-align:left;
                 background:#f8fafc;
                 padding:20px;
@@ -125,10 +121,10 @@
                     color:#475569;
                     line-height:1.9;
                     padding-left:20px;">        
-                    <li>Download the CareBook App.</li>
+                    <li>👇Download the CareBook App.</li>
                     <li>Install the APK.</li>
                     <li>Return to this page.</li>
-                    <li>Tap the <b>Continue</b> button below.</li>
+                    <li>👇Tap the <b>Continue</b> button below.</li>
                 </ol>        
             </div>        
             <a
